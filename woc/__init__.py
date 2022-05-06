@@ -13,4 +13,4 @@ __author__ = 'Cristiano Sabiu'
 __version__ = '0.0.1'
 
 from woc.woc import *
-from woc.radial import *
+from woc.radial_profile import *

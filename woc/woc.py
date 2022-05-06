@@ -8,8 +8,11 @@ from astropy.convolution import Gaussian2DKernel
 __all__ = ['woc']
 
 # with NaN dealing & signal strength considered weight
-def woc(map1,map2,mask,radii,centre=None,pixelsize=1, plot=False,savefig=None):
-    
+def woc(map1,map2,radii,mask=mask,centre=None,pixelsize=1, plot=False,savefig=None):
+
+    if(mask==None):
+        mask=(map1*0)+1
+        
     if(centre==None):
         centre=np.asarray(np.shape(icl1))/2
         print("computing centre",centre)

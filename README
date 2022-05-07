@@ -19,3 +19,4 @@ map2 should be same shape as map1
 radii is the array of radius values used to select the contours from map1 eg [100,200,300] in pixel units
 
 optional: mask is the array used to mask both maps (0=masked, 1=unmasked)
+

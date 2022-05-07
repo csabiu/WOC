@@ -1,22 +1,33 @@
-# WOC
-Weighted Overlap Coefficient
+# WOC - Weighted Overlap Coefficient
 
 Python code to calculate the weighted overlap coefficient between 2 fields while considering masking.
 Please cite J. Yoo et.al., (APJS, in prep 2022) arXiv:xxxx.xxxx
 
-Intsall
+Install
 -------
 
 !pip install git+https://github.com/csabiu/WOC.git
+
+or
+
+pip install pywoc
 
 Running
 -------
 
 woc(map1,map2,radii, mask=mask)
 
-map1 is the 2D array of pixel values
-map2 should be same shape as map1
-radii is the array of radius values used to select the contours from map1 eg [100,200,300] in pixel units
+- map1 is the 2D array of pixel values
 
-optional: mask is the array used to mask both maps (0=masked, 1=unmasked)
+- map2 should be same shape as map1
 
+- radii is the array of radius values used to select the contours from map1 eg [100,200,300] in pixel units
+
+- optional: mask is the array used to mask both maps (0=masked, 1=unmasked)
+
+revision history
+----------------
+
+0.0.1 - initial code release
+0.1.0 - added python notebook tutorial under /nb
+      - improved documentation

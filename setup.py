@@ -5,15 +5,15 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
-    name='woc',
-    version="0.0.1",
+    name='pywoc',
+    version="0.1.0",
     author='Cristiano Sabiu',
     author_email='csabiu@gmail.com',
     description='2-D comparison',
     url='https://github.com/csabiu/woc',
-    license='BSD License (3-Clause)',
+    license='GNU GPL v3 License',
     long_description=read('README'),
-    packages=['woc'],
+    packages=['pywoc'],
     install_requires=['numpy', 'scipy', 'astropy'],
     keywords=[
         'woc',

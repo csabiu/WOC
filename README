@@ -1,7 +1,7 @@
 # WOC - Weighted Overlap Coefficient
 
 Python code to calculate the weighted overlap coefficient between 2 fields while considering masking.
-Please cite J. Yoo et.al., (APJS, in prep 2022) arXiv:xxxx.xxxx
+Please cite J. Yoo et.al., (ApJS, Vol 261, Issue 2, 2022) arXiv:2205.08161
 
 Install
 -------

@@ -5,16 +5,16 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
-    name='pywoc',
-    version="0.1.0",
+    name='woc',
+    version="0.2.0",
     author='Cristiano Sabiu',
     author_email='csabiu@gmail.com',
     description='2-D comparison',
     url='https://github.com/csabiu/woc',
     license='GNU GPL v3 License',
     long_description=read('README'),
-    packages=['pywoc'],
-    install_requires=['numpy', 'scipy', 'astropy'],
+    packages=['woc'],
+    install_requires=['numpy', 'scipy', 'astropy','matplotlib','packaging','pyerfa'],
     keywords=[
         'woc',
         'spatial statistics',

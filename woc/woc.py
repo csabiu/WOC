@@ -3,7 +3,8 @@ import numpy as np
 from scipy.ndimage.filters import gaussian_filter
 from astropy.convolution import convolve
 from astropy.convolution import Gaussian2DKernel
-
+import matplotlib.pyplot as plt
+from woc.radial_profile import radial_profile
 
 __all__ = ['woc']
 
@@ -14,10 +15,13 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
         mask=(map1*0)+1
         
     if(centre==None):
-        centre=np.asarray(np.shape(icl1))/2
+        centre=np.asarray(np.shape(map1))/2
         print("computing centre",centre)
+
+    maxr=np.shape(map1)[0]/2.0
+    step=maxr/20.0
     
-    r,DMprofile1=radial_profile(map1,mask,centre,0,500,24)
+    r,DMprofile1=radial_profile(map1,mask,centre,0.0,maxr,step)
     
     nlevel=np.shape(radii)[0]
     if(nlevel<=0):
@@ -45,6 +49,9 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
     
     Totalmass1=float(np.sum(map1[map1>0.0]))
     Totalmass2=float(np.sum(map2[map2>0.0]))
+    r100x, r100y=np.where(map2>1E-20)
+    Totalarea2=float(np.shape(r100x)[0])
+    
     
     for i in range(nlevel):
         DMradii[i]=np.interp(x=radii[i],xp=pixelsize*r,fp=DMprofile1)
@@ -53,7 +60,10 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
         arearadii[i]=float(np.shape(r100x)[0])
         massradii1[i]=np.sum(map1[map1>DMradii[i]])
         #print(arearadii[i])
-        
+        if arearadii[i]>Totalarea2:
+            print('Warning: map2 too peaky')
+            print('Overlap calculation failed')
+            return -1000        
         
         level=np.log10(np.max(map2))
         while True:

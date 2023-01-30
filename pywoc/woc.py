@@ -1,4 +1,5 @@
 from astropy.io import fits
+
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter
 from astropy.convolution import convolve
@@ -15,9 +16,13 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
         mask=(map1*0)+1
         
     if(centre==None):
-        centre=np.asarray(np.shape(map1))/2
+        centre=np.squeeze(np.where(map1 == map1.max()))
         print("computing centre",centre)
 
+    if(centre=="mid"):
+        centre=np.asarray(np.shape(map1))/2
+        print("computing centre",centre)
+            
     maxr=np.shape(map1)[0]/2.0
     step=maxr/20.0
     

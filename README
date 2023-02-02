@@ -20,7 +20,7 @@ Running
 
 from pywoc import woc
 
-woc(map1,map2,radii, mask=mask)
+woc(map1,map2,radii, mask=mask, rbins=20, )
 
 - map1 is the 2D array of pixel values
 
@@ -28,8 +28,9 @@ woc(map1,map2,radii, mask=mask)
 
 - radii is the array of radius values used to select the contours from map1 eg [100,200,300] in pixel units
 
-- optional: mask is the array used to mask both maps (0=masked, 1=unmasked)
-
+- optional: mask     is the array used to mask both maps (0=masked, 1=unmasked)
+  	    rbins    number of radial bins used for radial profile calculation
+	    
 revision history
 ----------------
 

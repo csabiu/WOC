@@ -10,7 +10,7 @@ from pywoc.radial_profile import radial_profile
 __all__ = ['woc']
 
 # with NaN dealing & signal strength considered weight
-def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=None):
+def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=None, rbins=20, maxr=None):
 
     if(mask==None):
         mask=(map1*0)+1
@@ -22,11 +22,24 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
     if(centre=="mid"):
         centre=np.asarray(np.shape(map1))/2
         print("computing centre",centre)
-            
-    maxr=np.shape(map1)[0]/2.0
-    step=maxr/20.0
+
+    if(maxr==None):
+        maxr=np.shape(map1)[0]/2.0
+        
+    step=maxr/rbins
     
     r,DMprofile1=radial_profile(map1,mask,centre,0.0,maxr,step)
+
+    if(plot):
+        plt.plot(r*pixelsize,DMprofile1,'o')
+        plt.xlabel('length unit')
+        plt.ylabel('density')
+        if(savefig==None):
+            plt.show()
+        else: 
+            plt.savefig(savefig+'rad.jpg')
+
+
     
     nlevel=np.shape(radii)[0]
     if(nlevel<=0):
@@ -97,9 +110,10 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
             ax[i].set_xlabel("x [pixel]",fontsize=14)
             if (i==0):
                 ax[i].set_ylabel("y [pixel]",fontsize=14)
-            ax[i].set(xlim=(0,1000),ylim=(0,1000))
+            ax[i].set(xlim=(0,np.shape(map1)[0]),ylim=(0,np.shape(map1)[0]))
             ax[i].set_aspect('equal')
-    
+            ax[i].plot(centre[0],centre[1],'k+')
+            
     if(plot): 
         if(savefig==None):
             plt.show()

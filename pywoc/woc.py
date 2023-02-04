@@ -38,7 +38,7 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
             plt.show()
         else: 
             plt.savefig(savefig+'rad.jpg')
-
+        plt.close()
 
     
     nlevel=np.shape(radii)[0]
@@ -114,17 +114,21 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
             ax[i].set_aspect('equal')
             ax[i].plot(centre[0],centre[1],'k+')
             
-    if(plot): 
-        if(savefig==None):
-            plt.show()
-        else: 
-            plt.savefig(savefig)
-        
+            
     coefficient1=0.0
     coefficient2=0.0
     for i in range(nlevel):
         coefficient1=coefficient1+(Overlap[i]/arearadii[i])*(arearadii[-1]/arearadii[i])*(Totalmass1/massradii1[i])*(Totalmass2/massradii2[i])
         coefficient2=coefficient2+(arearadii[-1]/arearadii[i])*(Totalmass1/massradii1[i])*(Totalmass2/massradii2[i])
 
+    if(plot):
+        plt.title('woc:'+coefficient1/coefficient2)
+        
+        if(savefig==None):
+            plt.show()
+        else: 
+            plt.savefig(savefig)
+        plt.close()
+        
     print('woc:',coefficient1/coefficient2)
     return coefficient1/coefficient2

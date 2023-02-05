@@ -56,3 +56,6 @@ fixed some installation problems
 
 0.3.0
 added extra parameters to control the radial profile calculation
+
+0.4.0
+added some numba support

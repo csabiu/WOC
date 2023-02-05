@@ -1,17 +1,26 @@
 from astropy.io import fits
-
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter
 from astropy.convolution import convolve
 from astropy.convolution import Gaussian2DKernel
 import matplotlib.pyplot as plt
 from pywoc.radial_profile import radial_profile
+import time
+from numba import jit
 
 __all__ = ['woc']
 
+
+@jit
+def findX(map1,level):
+    r100x, r100y=np.where(map1>level)
+    aa=float(np.shape(r100x)[0])
+    bb=np.sum(map1[map1>level])
+    return aa,bb
+
 # with NaN dealing & signal strength considered weight
 def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=None, rbins=20, maxr=None):
-
+    start = time.time()
     if(mask==None):
         mask=(map1*0)+1
         
@@ -28,7 +37,7 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
         
     step=maxr/rbins
     
-    r,DMprofile1=radial_profile(map1,mask,centre,0.0,maxr,step)
+    r,DMprofile1=radial_profile(map1,mask,(centre[1],centre[0]),0.0,maxr,step)
 
     if(plot):
         plt.plot(r*pixelsize,DMprofile1,'o')
@@ -37,7 +46,7 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
         if(savefig==None):
             plt.show()
         else: 
-            plt.savefig(savefig+'rad.jpg')
+            plt.savefig(savefig+'.rad.jpg')
         plt.close()
 
     
@@ -74,9 +83,11 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
     for i in range(nlevel):
         DMradii[i]=np.interp(x=radii[i],xp=pixelsize*r,fp=DMprofile1)
         # Area where DM in 100kpc
-        r100x, r100y=np.where(map1>DMradii[i])
-        arearadii[i]=float(np.shape(r100x)[0])
-        massradii1[i]=np.sum(map1[map1>DMradii[i]])
+        #r100x, r100y=np.where(map1>DMradii[i])
+        #arearadii[i]=float(np.shape(r100x)[0])
+        #massradii1[i]=np.sum(map1[map1>DMradii[i]])
+        arearadii[i], massradii1[i]=findX(map1,DMradii[i])
+
         #print(arearadii[i])
         if arearadii[i]>Totalarea2:
             print('Warning: map2 too peaky')
@@ -99,14 +110,17 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
         print("overlap area at radius of "+str(radii[i])+" = "+str(Overlap[i]))
         print("Enclosed mass1 fraction at radius of "+str(radii[i])+" = "+str(massradii1[i]/Totalmass1))
         print("Enclosed mass2 fraction at radius of "+str(radii[i])+" = "+str(massradii2[i]/Totalmass2))
+
+
+        [a,b]=np.where(map1>DMradii[i])
+        if(plot): ax[i].scatter(a,b,marker='.',alpha=0.3,color='orange',label='map1')
         
         [a,b]=np.where(map2>10**level100)
-        if(plot): ax[i].scatter(a,b,marker='.',alpha=0.3)
-        [a,b]=np.where(map1>DMradii[i])
-        if(plot): ax[i].scatter(a,b,marker='.',alpha=0.3)
+        if(plot): ax[i].scatter(a,b,marker='.',alpha=0.3,color='blue',label='map2')
+
         [ox,oy]=np.where((map1>DMradii[i]) & (map2>10**level100))
         if(plot):
-            ax[i].scatter(ox,oy,marker='.',alpha=0.3)
+            ax[i].scatter(ox,oy,marker='.',alpha=0.3,color='green')
             ax[i].set_xlabel("x [pixel]",fontsize=14)
             if (i==0):
                 ax[i].set_ylabel("y [pixel]",fontsize=14)
@@ -122,7 +136,8 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
         coefficient2=coefficient2+(arearadii[-1]/arearadii[i])*(Totalmass1/massradii1[i])*(Totalmass2/massradii2[i])
 
     if(plot):
-        plt.title('woc:'+coefficient1/coefficient2)
+        plt.legend()
+        plt.title('woc: '+str(coefficient1/coefficient2))
         
         if(savefig==None):
             plt.show()
@@ -130,5 +145,6 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
             plt.savefig(savefig)
         plt.close()
         
-    print('woc:',coefficient1/coefficient2)
+    print('woc: ',coefficient1/coefficient2)
+    print('time taken: ',time.time()-start)
     return coefficient1/coefficient2

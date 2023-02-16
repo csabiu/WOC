@@ -19,7 +19,8 @@ def findX(map1,level):
     return aa,bb
 
 # with NaN dealing & signal strength considered weight
-def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=None, rbins=20, maxr=None):
+def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=None, rbins=20, maxr=None,
+        method='median'):
     start = time.time()
     if(mask==None):
         mask=(map1*0)+1
@@ -36,9 +37,12 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
         maxr=np.shape(map1)[0]/2.0
         
     step=maxr/rbins
-    
-    r,DMprofile1=radial_profile(map1,mask,(centre[1],centre[0]),0.0,maxr,step)
 
+    if(method=='median'):
+        r,DMprofile1=radial_profile(map1,mask,(centre[1],centre[0]),0.0,maxr,step,method='median')
+    if(method=='mean'):
+        r,DMprofile1=radial_profile(map1,mask,(centre[1],centre[0]),0.0,maxr,step,method='mean')
+        
     if(plot):
         plt.plot(r*pixelsize,DMprofile1,'o')
         plt.xlabel('length unit')

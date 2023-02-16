@@ -6,7 +6,7 @@ from astropy.convolution import Gaussian2DKernel
 
 __all__ = ['radial_profile']
 
-def radial_profile(data, mask, center, rmin, rmax,width):
+def radial_profile(data, mask, center, rmin, rmax,width, method='median'):
     y,x = np.indices((data.shape)) # first determine radii of all pixels
     r = np.sqrt((x-center[0])**2+(y-center[1])**2)
     sr = r.flat
@@ -21,7 +21,10 @@ def radial_profile(data, mask, center, rmin, rmax,width):
     n=0
     for rr in rbins[:-1]:
         inds=np.where((sr>=rr) & (sr<=rr+width) & (sim==sim) & (msk==1))
-        array[n]=np.median(sim[np.squeeze(inds)]) 
+        if method=='median':
+            array[n]=np.median(sim[np.squeeze(inds)]) 
+        if(method=='mean'):
+            array[n]=np.mean(sim[np.squeeze(inds)])    
         n=n+1
         #print(len(np.squeeze(inds)))
     return rbins[:-1]+0.5*width, array

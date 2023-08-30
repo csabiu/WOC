@@ -111,7 +111,7 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
         [ox,oy]=np.where((map1>DMradii[i]) & (map2>10**level100))
         Overlap[i]=float(np.shape(ox)[0])
         print("Area at radius of "+str(radii[i])+" = "+str(arearadii[i]))
-        print("Levels at radius of "+str(radii[i])+" map 1 = "+str(DMradii[i])+" map 2 = "+ str(level100))
+        print("Levels at radius of "+str(radii[i])+" map 1 = "+str(DMradii[i])+" map 2 = "+ str(10**level100))
         print("overlap area at radius of "+str(radii[i])+" = "+str(Overlap[i]))
         print("Enclosed mass1 fraction at radius of "+str(radii[i])+" = "+str(massradii1[i]/Totalmass1))
         print("Enclosed mass2 fraction at radius of "+str(radii[i])+" = "+str(massradii2[i]/Totalmass2))

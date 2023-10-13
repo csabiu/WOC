@@ -25,14 +25,16 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
     if(mask==None):
         mask=(map1*0)+1
         
-    if(centre==None):
-        centre=np.squeeze(np.where(map1 == map1.max()))
+    if(centre==None): # use maximum point
+        #centre=np.squeeze(np.where(map1 == map1.max()))
+        #print("computing centre",centre)
+        centre = np.unravel_index(np.argmax(map1), map1.shape)
         print("computing centre",centre)
 
-    if(centre=="mid"):
+    if(centre=="mid"): # use geomtric centre
         centre=np.asarray(np.shape(map1))/2
         print("computing centre",centre)
-
+        
     if(maxr==None):
         maxr=np.shape(map1)[0]/2.0
         
@@ -83,7 +85,8 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
     r100x, r100y=np.where(map2>1E-20)
     Totalarea2=float(np.shape(r100x)[0])
     
-    
+    map2radii=np.zeros((nlevel,))
+
     for i in range(nlevel):
         DMradii[i]=np.interp(x=radii[i],xp=pixelsize*r,fp=DMprofile1)
         # Area where DM in 100kpc
@@ -107,6 +110,8 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
                 level100=level
                 break
         
+        map2radii[i]=10**level100
+
         massradii2[i]=np.sum(map2[map2>10**level100])
         [ox,oy]=np.where((map1>DMradii[i]) & (map2>10**level100))
         Overlap[i]=float(np.shape(ox)[0])
@@ -133,12 +138,27 @@ def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=No
             ax[i].set_aspect('equal')
             ax[i].plot(centre[0],centre[1],'k+')
             
-            
+    sum1=np.sum(DMradii)
+    sum2=np.sum(map2radii)
+    sum3=np.sum(arearadii)
+    sum4=0.0
+    for i in range(nlevel):            
+        sum4=sum4+arearadii[-1]/arearadii[i]
+
     coefficient1=0.0
     coefficient2=0.0
     for i in range(nlevel):
-        coefficient1=coefficient1+(Overlap[i]/arearadii[i])*(arearadii[-1]/arearadii[i])*(Totalmass1/massradii1[i])*(Totalmass2/massradii2[i])
-        coefficient2=coefficient2+(arearadii[-1]/arearadii[i])*(Totalmass1/massradii1[i])*(Totalmass2/massradii2[i])
+        #coefficient1=coefficient1+(Overlap[i]/arearadii[i])*(arearadii[-1]/arearadii[i])*(Totalmass1/massradii1[i])*(Totalmass2/massradii2[i])
+        #coefficient2=coefficient2+(arearadii[-1]/arearadii[i])*(Totalmass1/massradii1[i])*(Totalmass2/massradii2[i])
+
+        coefficient1=coefficient1+(Overlap[i]/arearadii[i])*(((arearadii[-1]/arearadii[i])/sum4) +(DMradii[i]/sum1)+(map2radii[i]/sum2))
+        coefficient2=coefficient2+((arearadii[-1]/arearadii[i])/sum4)+(DMradii[i]/sum1)+(map2radii[i]/sum2)
+
+        #print (Totalmass1/massradii1[i])
+        print(Overlap[i]/arearadii[i])
+        print(DMradii[i]/sum1)
+        print(map2radii[i]/sum2)
+        print((arearadii[-1]/arearadii[i])/sum4)
 
     if(plot):
         plt.legend()

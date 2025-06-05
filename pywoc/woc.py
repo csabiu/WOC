@@ -22,20 +22,20 @@ def findX(map1,level):
 def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=None, rbins=20, maxr=None,
         method='median'):
     start = time.time()
-    if(mask==None):
+    if mask is None:
         mask=(map1*0)+1
         
-    if(centre==None): # use maximum point
+    if centre is None: # use maximum point
         #centre=np.squeeze(np.where(map1 == map1.max()))
         #print("computing centre",centre)
         centre = np.unravel_index(np.argmax(map1), map1.shape)
         print("computing centre",centre)
 
-    if(centre=="mid"): # use geomtric centre
+    if centre=="mid": # use geomtric centre
         centre=np.asarray(np.shape(map1))/2
         print("computing centre",centre)
         
-    if(maxr==None):
+    if maxr is None:
         maxr=np.shape(map1)[0]/2.0
         
     step=maxr/rbins

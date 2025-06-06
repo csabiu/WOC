@@ -14,7 +14,8 @@ def radial_profile(data, mask, center, rmin, rmax, width, method='median'):
     data : ndarray
         2-D map whose radial statistics are computed.
     mask : ndarray
-        Boolean mask array where valid pixels are 1.
+        Boolean mask array with the same shape as ``data`` where valid pixels
+        are marked with ``1``.
     center : tuple
         ``(x, y)`` coordinates of the profile centre.
     rmin, rmax : float

@@ -15,11 +15,11 @@ __all__ = ['woc']
 
 
 @jit
-def findX(map1,level):
-    r100x, r100y=np.where(map1>level)
-    aa=float(np.shape(r100x)[0])
-    bb=np.sum(map1[map1>level])
-    return aa,bb
+def findX(map1, level):
+    r100x, r100y = np.where(map1 > level)
+    aa = float(np.shape(r100x)[0])
+    bb = np.sum(map1 * (map1 > level))
+    return aa, bb
 
 # with NaN dealing & signal strength considered weight
 def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,

@@ -1,4 +1,7 @@
 from pywoc.woc import woc
+import logging
+
+logger = logging.getLogger(__name__)
 from astropy.io import fits
 import matplotlib
 import numpy as np
@@ -23,8 +26,8 @@ a,b,c=np.histogram2d(x,y,100,range=((200,800),(200,800)))
 kernel = Gaussian2DKernel(10, mode='linear_interp')
 
 dm_model = convolve(a,kernel,boundary='extend', nan_treatment='interpolate', preserve_nan=False)
-levels=np.linspace(2*np.std(dm_model),np.max(dm_model),4)
-print(levels)
+levels = np.linspace(2 * np.std(dm_model), np.max(dm_model), 4)
+logger.info(levels)
 
 plt.contour(dm_model,levels=levels, colors='black')
 plt.plot([0,0],[0,0],'k-',label='DM')

@@ -6,7 +6,7 @@ def read(fname):
 
 setup(
     name='pywoc',
-    version="0.4.0",
+    version="0.4.1",
     author='Cristiano Sabiu',
     author_email='csabiu@gmail.com',
     description='2-D comparison',
@@ -14,7 +14,7 @@ setup(
     license='GNU GPL v3 License',
     long_description=read('README'),
     packages=['pywoc'],
-    install_requires=['numpy', 'scipy', 'astropy','matplotlib','packaging','pyerfa'],
+    install_requires=['numpy', 'scipy', 'astropy', 'matplotlib', 'packaging', 'pyerfa', 'numba'],
     keywords=[
         'woc',
         'spatial statistics',

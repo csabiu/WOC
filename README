@@ -20,25 +20,37 @@ Running
 
 from pywoc import woc
 
-woc(map1,map2,radii, mask=mask, centre=None,pixelsize=1, plot=False,savefig=None, rbins=20, maxr=None):)
+woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
+    plot=False, savefig=None, rbins=20, maxr=None):
 
-- map1 is the 2D array of pixel values
+- **map1** -- 2‑D ``numpy.ndarray`` representing the reference map. The
+  array shape defines the pixel grid and all values should be finite and
+  non‑negative.
 
-- map2 should be same shape as map1
+- **map2** -- second map with the **same shape** as ``map1``. Its units
+  should match those of ``map1``. Any ``NaN`` entries are ignored when the
+  coefficient is calculated.
 
-- radii is the array of radius values used to select the contours from map1
-  eg [100,200,300] in physical units if pixelsize is set, otherwise defaults to pixel units
+- **radii** -- sequence of radius values used to define contours in ``map1``.
+  The values are interpreted in units of ``pixelsize`` (pixels if
+  ``pixelsize`` is ``1``). For example ``[100, 200, 300]`` means 100, 200 and
+  300 pixels or, when ``pixelsize`` gives the physical pixel size, distances in
+  those physical units.
 
-- optional: mask     is the array used to mask both maps (0=masked, 1=unmasked)
-  	    pixelsize used to convert pixelunits to physical scales
-  	    rbins    number of radial bins used for radial profile calculation
-	    maxr     maximum scale of radial profile calculation [in pixel units!]
-	    centre   centre position used for radial profile calculation
-	    	     If 'None' it will use the most dense point of Map1
-		     If 'mid' it will use the middle of the Map1
-		     If [x,y] it will use x,y as position
-	    plot     True/False whether to make plots
-	    savefig  figure filename e.g 'woc.jpg'
+- **optional parameters**
+    - ``mask`` -- boolean array with the same shape as the maps. ``1`` marks
+      valid pixels and ``0`` masks them.
+    - ``pixelsize`` -- conversion factor from pixel units to physical units.
+    - ``rbins`` -- number of radial bins for the radial profile.
+    - ``maxr`` -- maximum radius of the profile in **pixel units**.
+    - ``centre`` -- profile centre. ``None`` uses the brightest pixel of
+      ``map1``; ``"mid"`` uses the geometric centre; ``[x, y]`` specifies explicit
+      coordinates.
+    - ``plot`` -- if ``True`` show diagnostic plots.
+    - ``savefig`` -- filename for plots when ``plot`` is ``True``.
+
+The call returns a single floating point value containing the weighted
+overlap coefficient between ``map1`` and ``map2``.
 		    
 revision history
 ----------------

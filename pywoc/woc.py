@@ -19,8 +19,47 @@ def findX(map1,level):
     return aa,bb
 
 # with NaN dealing & signal strength considered weight
-def woc(map1,map2,radii,mask=None,centre=None,pixelsize=1, plot=False,savefig=None, rbins=20, maxr=None,
-        method='median'):
+def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
+        plot=False, savefig=None, rbins=20, maxr=None, method='median'):
+    """Compute the weighted overlap coefficient between two maps.
+
+    Parameters
+    ----------
+    map1 : ndarray
+        Reference map of non-negative values. Must be 2-D and have the
+        same shape as ``map2``.
+    map2 : ndarray
+        Second map with identical shape to ``map1``. ``NaN`` values are
+        ignored in the computation.
+    radii : array_like
+        Sequence of radii (in units of ``pixelsize``) used to define the
+        contours in ``map1`` from which the overlap is measured.
+    mask : ndarray, optional
+        Boolean array with the same shape as the maps. ``1`` marks valid
+        pixels and ``0`` masks them. If ``None`` all pixels are used.
+    centre : sequence or str, optional
+        Centre of the radial profile. ``None`` (default) selects the
+        brightest pixel of ``map1``; ``"mid"`` uses the array centre; a
+        two-element sequence specifies ``(x, y)`` pixel coordinates.
+    pixelsize : float, optional
+        Size of one pixel in physical units. Radii are interpreted in
+        these units.
+    plot : bool, optional
+        Show diagnostic plots.
+    savefig : str, optional
+        If given, save plots to this filename.
+    rbins : int, optional
+        Number of radial bins used in the profile.
+    maxr : float, optional
+        Maximum radius of the profile in pixel units.
+    method : {'median', 'mean'}, optional
+        Statistic used when computing the radial profile.
+
+    Returns
+    -------
+    float
+        Weighted overlap coefficient between ``map1`` and ``map2``.
+    """
     start = time.time()
     if mask is None:
         mask=(map1*0)+1

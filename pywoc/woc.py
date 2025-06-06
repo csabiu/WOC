@@ -7,6 +7,9 @@ import matplotlib.pyplot as plt
 from pywoc.radial_profile import radial_profile
 import time
 from numba import jit
+import logging
+
+logger = logging.getLogger(__name__)
 
 __all__ = ['woc']
 
@@ -68,11 +71,11 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
         #centre=np.squeeze(np.where(map1 == map1.max()))
         #print("computing centre",centre)
         centre = np.unravel_index(np.argmax(map1), map1.shape)
-        print("computing centre",centre)
+        logger.debug("computing centre %s", centre)
 
     if centre=="mid": # use geomtric centre
         centre=np.asarray(np.shape(map1))/2
-        print("computing centre",centre)
+        logger.debug("computing centre %s", centre)
         
     if maxr is None:
         maxr=np.shape(map1)[0]/2.0
@@ -97,7 +100,7 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
     
     nlevel=np.shape(radii)[0]
     if(nlevel<=0):
-        print("Error: code requires 2 or more contour levels")
+        logger.error("Error: code requires 2 or more contour levels")
         return
         
     DMradii=np.zeros((nlevel,))
@@ -135,10 +138,10 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
         arearadii[i], massradii1[i]=findX(map1,DMradii[i])
 
         #print(arearadii[i])
-        if arearadii[i]>Totalarea2:
-            print('Warning: map2 too peaky')
-            print('Overlap calculation failed')
-            return -1000        
+        if arearadii[i] > Totalarea2:
+            logger.warning('map2 too peaky')
+            logger.error('Overlap calculation failed')
+            return -1000
         
         level=np.log10(np.max(map2))
         while True:
@@ -151,14 +154,27 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
         
         map2radii[i]=10**level100
 
-        massradii2[i]=np.sum(map2[map2>10**level100])
-        [ox,oy]=np.where((map1>DMradii[i]) & (map2>10**level100))
-        Overlap[i]=float(np.shape(ox)[0])
-        print("Area at radius of "+str(radii[i])+" = "+str(arearadii[i]))
-        print("Levels at radius of "+str(radii[i])+" map 1 = "+str(DMradii[i])+" map 2 = "+ str(10**level100))
-        print("overlap area at radius of "+str(radii[i])+" = "+str(Overlap[i]))
-        print("Enclosed mass1 fraction at radius of "+str(radii[i])+" = "+str(massradii1[i]/Totalmass1))
-        print("Enclosed mass2 fraction at radius of "+str(radii[i])+" = "+str(massradii2[i]/Totalmass2))
+        massradii2[i] = np.sum(map2[map2 > 10 ** level100])
+        [ox, oy] = np.where((map1 > DMradii[i]) & (map2 > 10 ** level100))
+        Overlap[i] = float(np.shape(ox)[0])
+        logger.debug("Area at radius of %s = %s", radii[i], arearadii[i])
+        logger.debug(
+            "Levels at radius of %s map 1 = %s map 2 = %s",
+            radii[i],
+            DMradii[i],
+            10 ** level100,
+        )
+        logger.debug("overlap area at radius of %s = %s", radii[i], Overlap[i])
+        logger.debug(
+            "Enclosed mass1 fraction at radius of %s = %s",
+            radii[i],
+            massradii1[i] / Totalmass1,
+        )
+        logger.debug(
+            "Enclosed mass2 fraction at radius of %s = %s",
+            radii[i],
+            massradii2[i] / Totalmass2,
+        )
 
 
         [a,b]=np.where(map1>DMradii[i])
@@ -190,14 +206,23 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
         #coefficient1=coefficient1+(Overlap[i]/arearadii[i])*(arearadii[-1]/arearadii[i])*(Totalmass1/massradii1[i])*(Totalmass2/massradii2[i])
         #coefficient2=coefficient2+(arearadii[-1]/arearadii[i])*(Totalmass1/massradii1[i])*(Totalmass2/massradii2[i])
 
-        coefficient1=coefficient1+(Overlap[i]/arearadii[i])*(((arearadii[-1]/arearadii[i])/sum4) +(DMradii[i]/sum1)+(map2radii[i]/sum2))
-        coefficient2=coefficient2+((arearadii[-1]/arearadii[i])/sum4)+(DMradii[i]/sum1)+(map2radii[i]/sum2)
+        coefficient1 = coefficient1 + (
+            Overlap[i] / arearadii[i]
+        ) * (
+            (arearadii[-1] / arearadii[i]) / sum4
+            + (DMradii[i] / sum1)
+            + (map2radii[i] / sum2)
+        )
+        coefficient2 = coefficient2 + (
+            (arearadii[-1] / arearadii[i]) / sum4
+            + (DMradii[i] / sum1)
+            + (map2radii[i] / sum2)
+        )
 
-        #print (Totalmass1/massradii1[i])
-        print(Overlap[i]/arearadii[i])
-        print(DMradii[i]/sum1)
-        print(map2radii[i]/sum2)
-        print((arearadii[-1]/arearadii[i])/sum4)
+        logger.debug("%s", Overlap[i] / arearadii[i])
+        logger.debug("%s", DMradii[i] / sum1)
+        logger.debug("%s", map2radii[i] / sum2)
+        logger.debug("%s", (arearadii[-1] / arearadii[i]) / sum4)
 
     if(plot):
         plt.legend()
@@ -208,7 +233,7 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
         else: 
             plt.savefig(savefig)
         plt.close()
-        
-    print('woc: ',coefficient1/coefficient2)
-    print('time taken: ',time.time()-start)
-    return coefficient1/coefficient2
+
+    logger.info('woc: %s', coefficient1 / coefficient2)
+    logger.info('time taken: %s', time.time() - start)
+    return coefficient1 / coefficient2

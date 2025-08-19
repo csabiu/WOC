@@ -1,8 +1,4 @@
-from astropy.io import fits
 import numpy as np
-from scipy.ndimage.filters import gaussian_filter
-from astropy.convolution import convolve
-from astropy.convolution import Gaussian2DKernel
 
 __all__ = ['radial_profile']
 
@@ -72,4 +68,3 @@ def radial_profile(data, mask, center, rmin, rmax, width, method='median'):
         ])
 
     return rbins[:-1] + 0.5 * width, array
-

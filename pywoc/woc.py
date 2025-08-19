@@ -1,9 +1,4 @@
-from astropy.io import fits
 import numpy as np
-from scipy.ndimage.filters import gaussian_filter
-from astropy.convolution import convolve
-from astropy.convolution import Gaussian2DKernel
-import matplotlib.pyplot as plt
 from pywoc.radial_profile import radial_profile
 import time
 from numba import jit
@@ -97,6 +92,7 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
         r,DMprofile1=radial_profile(map1,mask,(centre[1],centre[0]),0.0,maxr,step,method='mean')
         
     if(plot):
+        import matplotlib.pyplot as plt
         plt.plot(r*pixelsize,DMprofile1,'o')
         plt.xlabel('length unit')
         plt.ylabel('density')
@@ -119,6 +115,7 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
     massradii2=np.zeros((nlevel,)) # mass sum above the level
 
     if(plot):
+        import matplotlib.pyplot as plt
         fig,ax = plt.subplots(1, nlevel,figsize=(7, 8),sharey=True)
         fig.set_size_inches(w=9,h=3.5)
         if(nlevel>1):
@@ -234,6 +231,7 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
         logger.debug("%s", (arearadii[-1] / arearadii[i]) / sum4)
 
     if(plot):
+        import matplotlib.pyplot as plt
         plt.legend()
         plt.title('woc: '+str(coefficient1/coefficient2))
         

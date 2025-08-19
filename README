@@ -9,11 +9,18 @@ arXiv:2205.08161
 Install
 -------
 
-python -m pip install git+https://github.com/csabiu/WOC.git
+Base (runtime only):
 
-or
+    pip install pywoc
 
-pip install pywoc
+Optional extras:
+
+- Plotting support: `pip install pywoc[plot]`
+- Examples/tutorial deps (Astropy/Scipy/Matplotlib): `pip install pywoc[examples]`
+
+From source:
+
+    python -m pip install git+https://github.com/csabiu/WOC.git
 
 Running
 -------

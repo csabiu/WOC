@@ -11,39 +11,40 @@ __all__ = ['woc']
 
 @jit
 def findX(map1, level):
-    r100x, r100y = np.where(map1 > level)
-    aa = float(np.shape(r100x)[0])
+    indices = np.where(map1 > level)
+    aa = float(np.shape(indices[0])[0])
     bb = np.sum(map1 * (map1 > level))
     return aa, bb
 
 # with NaN dealing & signal strength considered weight
 def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
         plot=False, savefig=None, rbins=20, maxr=None, method='median'):
-    """Compute the weighted overlap coefficient between two maps.
+    """Compute the weighted overlap coefficient between two maps or volumes.
 
     Parameters
     ----------
     map1 : ndarray
-        Reference map of non-negative values. Must be 2-D and have the
-        same shape as ``map2``.
+        Reference map/volume of non-negative values. Must be 2-D or 3-D and
+        have the same shape as ``map2``.
     map2 : ndarray
-        Second map with identical shape to ``map1``. ``NaN`` values are
+        Second map/volume with identical shape to ``map1``. ``NaN`` values are
         ignored in the computation.
     radii : array_like
         Sequence of radii (in units of ``pixelsize``) used to define the
         contours in ``map1`` from which the overlap is measured.
     mask : ndarray, optional
         Boolean array with the same shape as the maps. ``1`` marks valid
-        pixels and ``0`` masks them. If ``None`` all pixels are used.
+        pixels/voxels and ``0`` masks them. If ``None`` all pixels are used.
     centre : sequence or str, optional
         Centre of the radial profile. ``None`` (default) selects the
         brightest pixel of ``map1``; ``"mid"`` uses the array centre; a
-        two-element sequence specifies ``(x, y)`` pixel coordinates.
+        two-element sequence ``(x, y)`` for 2D or three-element sequence
+        ``(x, y, z)`` for 3D specifies explicit coordinates.
     pixelsize : float, optional
-        Size of one pixel in physical units. Radii are interpreted in
+        Size of one pixel/voxel in physical units. Radii are interpreted in
         these units.
     plot : bool, optional
-        Show diagnostic plots.
+        Show diagnostic plots (only supported for 2D data).
     savefig : str, optional
         If given, save plots to this filename.
     rbins : int, optional
@@ -70,7 +71,14 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
     map2 = np.array(map2, copy=True)
     if mask is None:
         mask = np.ones_like(map1)
-        
+
+    # Detect dimensionality
+    ndim = map1.ndim
+    if ndim not in (2, 3):
+        raise ValueError(f"map1 must be 2D or 3D, got {ndim}D")
+    if map1.shape != map2.shape:
+        raise ValueError("map1 and map2 must have the same shape")
+
     if centre is None: # use maximum point
         #centre=np.squeeze(np.where(map1 == map1.max()))
         #print("computing centre",centre)
@@ -80,27 +88,38 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
     if centre=="mid": # use geomtric centre
         centre=np.asarray(np.shape(map1))/2
         logger.debug("computing centre %s", centre)
-        
+
     if maxr is None:
-        maxr=np.shape(map1)[0]/2.0
+        maxr=np.min(np.asarray(np.shape(map1)))/2.0
         
     step=maxr/rbins
 
+    # Convert centre from numpy indices order to coordinate order
+    # For 2D: centre is (y, x) -> need (x, y)
+    # For 3D: centre is (z, y, x) -> need (x, y, z)
+    if ndim == 2:
+        centre_coords = (centre[1], centre[0])
+    else:  # ndim == 3
+        centre_coords = (centre[2], centre[1], centre[0])
+
     if(method=='median'):
-        r,DMprofile1=radial_profile(map1,mask,(centre[1],centre[0]),0.0,maxr,step,method='median')
+        r,DMprofile1=radial_profile(map1,mask,centre_coords,0.0,maxr,step,method='median')
     if(method=='mean'):
-        r,DMprofile1=radial_profile(map1,mask,(centre[1],centre[0]),0.0,maxr,step,method='mean')
+        r,DMprofile1=radial_profile(map1,mask,centre_coords,0.0,maxr,step,method='mean')
         
     if(plot):
-        import matplotlib.pyplot as plt
-        plt.plot(r*pixelsize,DMprofile1,'o')
-        plt.xlabel('length unit')
-        plt.ylabel('density')
-        if(savefig==None):
-            plt.show()
-        else: 
-            plt.savefig(savefig+'.rad.jpg')
-        plt.close()
+        if ndim == 2:
+            import matplotlib.pyplot as plt
+            plt.plot(r*pixelsize,DMprofile1,'o')
+            plt.xlabel('length unit')
+            plt.ylabel('density')
+            if(savefig==None):
+                plt.show()
+            else:
+                plt.savefig(savefig+'.rad.jpg')
+            plt.close()
+        else:
+            logger.warning("Plotting is only supported for 2D data, skipping plots")
 
     
     nlevel=np.shape(radii)[0]
@@ -114,7 +133,7 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
     massradii1=np.zeros((nlevel,)) # mass sum above the level
     massradii2=np.zeros((nlevel,)) # mass sum above the level
 
-    if(plot):
+    if(plot and ndim == 2):
         import matplotlib.pyplot as plt
         fig,ax = plt.subplots(1, nlevel,figsize=(7, 8),sharey=True)
         fig.set_size_inches(w=9,h=3.5)
@@ -130,8 +149,8 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
     
     Totalmass1=float(np.sum(map1[map1>0.0]))
     Totalmass2=float(np.sum(map2[map2>0.0]))
-    r100x, r100y=np.where(map2>1E-20)
-    Totalarea2=float(np.shape(r100x)[0])
+    indices2=np.where(map2>1E-20)
+    Totalarea2=float(np.shape(indices2[0])[0])
     
     map2radii=np.zeros((nlevel,))
 
@@ -152,8 +171,8 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
         level=np.log10(np.max(map2))
         while True:
             level=level-0.001
-            tmp1,tmp2=np.where(map2>10**level)
-            aICL100=np.shape(tmp1)[0]
+            tmp_indices=np.where(map2>10**level)
+            aICL100=np.shape(tmp_indices[0])[0]
             if aICL100>=arearadii[i]:
                 level100=level
                 break
@@ -161,8 +180,8 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
         map2radii[i]=10**level100
 
         massradii2[i] = np.sum(map2[map2 > 10 ** level100])
-        [ox, oy] = np.where((map1 > DMradii[i]) & (map2 > 10 ** level100))
-        Overlap[i] = float(np.shape(ox)[0])
+        overlap_indices = np.where((map1 > DMradii[i]) & (map2 > 10 ** level100))
+        Overlap[i] = float(np.shape(overlap_indices[0])[0])
         logger.debug("Area at radius of %s = %s", radii[i], arearadii[i])
         logger.debug(
             "Levels at radius of %s map 1 = %s map 2 = %s",
@@ -183,21 +202,22 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
         )
 
 
-        [a,b]=np.where(map1>DMradii[i])
-        if(plot): ax[i].scatter(a,b,marker='.',alpha=0.3,color='orange',label='map1')
-        
-        [a,b]=np.where(map2>10**level100)
-        if(plot): ax[i].scatter(a,b,marker='.',alpha=0.3,color='blue',label='map2')
+        if ndim == 2:
+            [a,b]=np.where(map1>DMradii[i])
+            if(plot): ax[i].scatter(a,b,marker='.',alpha=0.3,color='orange',label='map1')
 
-        [ox,oy]=np.where((map1>DMradii[i]) & (map2>10**level100))
-        if(plot):
-            ax[i].scatter(ox,oy,marker='.',alpha=0.3,color='green')
-            ax[i].set_xlabel("x [pixel]",fontsize=14)
-            if (i==0):
-                ax[i].set_ylabel("y [pixel]",fontsize=14)
-            ax[i].set(xlim=(0,np.shape(map1)[0]),ylim=(0,np.shape(map1)[0]))
-            ax[i].set_aspect('equal')
-            ax[i].plot(centre[0],centre[1],'k+')
+            [a,b]=np.where(map2>10**level100)
+            if(plot): ax[i].scatter(a,b,marker='.',alpha=0.3,color='blue',label='map2')
+
+            [ox,oy]=np.where((map1>DMradii[i]) & (map2>10**level100))
+            if(plot):
+                ax[i].scatter(ox,oy,marker='.',alpha=0.3,color='green')
+                ax[i].set_xlabel("x [pixel]",fontsize=14)
+                if (i==0):
+                    ax[i].set_ylabel("y [pixel]",fontsize=14)
+                ax[i].set(xlim=(0,np.shape(map1)[0]),ylim=(0,np.shape(map1)[0]))
+                ax[i].set_aspect('equal')
+                ax[i].plot(centre[0],centre[1],'k+')
             
     sum1=np.sum(DMradii)
     sum2=np.sum(map2radii)
@@ -230,14 +250,14 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
         logger.debug("%s", map2radii[i] / sum2)
         logger.debug("%s", (arearadii[-1] / arearadii[i]) / sum4)
 
-    if(plot):
+    if(plot and ndim == 2):
         import matplotlib.pyplot as plt
         plt.legend()
         plt.title('woc: '+str(coefficient1/coefficient2))
-        
+
         if(savefig==None):
             plt.show()
-        else: 
+        else:
             plt.savefig(savefig)
         plt.close()
 

@@ -1,7 +1,7 @@
 WOC - Weighted Overlap Coefficient
 
 Python code to calculate the weighted overlap coefficient between
-2 fields while considering masking.
+2 fields (2D or 3D) while considering masking.
 
 Please cite J. Yoo et.al., (ApJS, Vol 261, Issue 2, 2022)
 arXiv:2205.08161
@@ -30,11 +30,11 @@ from pywoc import woc
 woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
     plot=False, savefig=None, rbins=20, maxr=None):
 
-- **map1** -- 2‑D ``numpy.ndarray`` representing the reference map. The
-  array shape defines the pixel grid and all values should be finite and
-  non‑negative.
+- **map1** -- 2‑D or 3-D ``numpy.ndarray`` representing the reference map/volume.
+  The array shape defines the pixel/voxel grid and all values should be finite
+  and non‑negative.
 
-- **map2** -- second map with the **same shape** as ``map1``. Its units
+- **map2** -- second map/volume with the **same shape** as ``map1``. Its units
   should match those of ``map1``. Any ``NaN`` entries are ignored when the
   coefficient is calculated.
 
@@ -46,14 +46,14 @@ woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
 
 - **optional parameters**
     - ``mask`` -- boolean array with the same shape as the maps. ``1`` marks
-      valid pixels and ``0`` masks them.
-    - ``pixelsize`` -- conversion factor from pixel units to physical units.
+      valid pixels/voxels and ``0`` masks them.
+    - ``pixelsize`` -- conversion factor from pixel/voxel units to physical units.
     - ``rbins`` -- number of radial bins for the radial profile.
-    - ``maxr`` -- maximum radius of the profile in **pixel units**.
+    - ``maxr`` -- maximum radius of the profile in **pixel/voxel units**.
     - ``centre`` -- profile centre. ``None`` uses the brightest pixel of
-      ``map1``; ``"mid"`` uses the geometric centre; ``[x, y]`` specifies explicit
-      coordinates.
-    - ``plot`` -- if ``True`` show diagnostic plots.
+      ``map1``; ``"mid"`` uses the geometric centre; ``[x, y]`` for 2D or
+      ``[x, y, z]`` for 3D specifies explicit coordinates.
+    - ``plot`` -- if ``True`` show diagnostic plots (only supported for 2D data).
     - ``savefig`` -- filename for plots when ``plot`` is ``True``.
 
 The call returns a single floating point value containing the weighted

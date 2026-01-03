@@ -9,11 +9,11 @@ setup(
     version="0.4.2",
     author='Cristiano Sabiu',
     author_email='csabiu@gmail.com',
-    description='2-D comparison',
+    description='Weighted overlap coefficient for 2D and 3D data comparison',
     url='https://github.com/csabiu/woc',
     license='GNU GPL v3 License',
-    long_description=read('README'),
-    long_description_content_type='text/plain',
+    long_description=read('README.md'),
+    long_description_content_type='text/markdown',
     packages=['pywoc'],
     # Keep runtime dependencies minimal: the core algorithm only needs
     # numpy and numba. Plotting and example generation are optional.

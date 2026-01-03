@@ -11,6 +11,22 @@ __all__ = ['woc']
 
 @jit
 def findX(map1, level):
+    """Compute area and mass above a given threshold level.
+
+    Parameters
+    ----------
+    map1 : ndarray
+        Input map or volume.
+    level : float
+        Threshold level.
+
+    Returns
+    -------
+    area : float
+        Number of pixels/voxels above the threshold.
+    mass : float
+        Sum of values above the threshold (weighted by pixel values).
+    """
     indices = np.where(map1 > level)
     aa = float(np.shape(indices[0])[0])
     bb = np.sum(map1 * (map1 > level))
@@ -80,12 +96,10 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
         raise ValueError("map1 and map2 must have the same shape")
 
     if centre is None: # use maximum point
-        #centre=np.squeeze(np.where(map1 == map1.max()))
-        #print("computing centre",centre)
         centre = np.unravel_index(np.argmax(map1), map1.shape)
         logger.debug("computing centre %s", centre)
 
-    if centre=="mid": # use geomtric centre
+    if centre == "mid": # use geomtric centre
         centre=np.asarray(np.shape(map1))/2
         logger.debug("computing centre %s", centre)
 
@@ -102,18 +116,18 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
     else:  # ndim == 3
         centre_coords = (centre[2], centre[1], centre[0])
 
-    if(method=='median'):
+    if method == 'median':
         r,DMprofile1=radial_profile(map1,mask,centre_coords,0.0,maxr,step,method='median')
-    if(method=='mean'):
+    if method == 'mean':
         r,DMprofile1=radial_profile(map1,mask,centre_coords,0.0,maxr,step,method='mean')
         
-    if(plot):
+    if plot:
         if ndim == 2:
             import matplotlib.pyplot as plt
             plt.plot(r*pixelsize,DMprofile1,'o')
             plt.xlabel('length unit')
             plt.ylabel('density')
-            if(savefig==None):
+            if savefig is None:
                 plt.show()
             else:
                 plt.savefig(savefig+'.rad.jpg')
@@ -123,7 +137,7 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
 
     
     nlevel=np.shape(radii)[0]
-    if(nlevel<=0):
+    if nlevel <= 0:
         logger.error("Error: code requires 2 or more contour levels")
         return
         
@@ -133,11 +147,11 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
     massradii1=np.zeros((nlevel,)) # mass sum above the level
     massradii2=np.zeros((nlevel,)) # mass sum above the level
 
-    if(plot and ndim == 2):
+    if plot and ndim == 2:
         import matplotlib.pyplot as plt
         fig,ax = plt.subplots(1, nlevel,figsize=(7, 8),sharey=True)
         fig.set_size_inches(w=9,h=3.5)
-        if(nlevel>1):
+        if nlevel > 1:
             ax = ax.ravel()
         else:
             ax1=[]
@@ -156,13 +170,8 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
 
     for i in range(nlevel):
         DMradii[i]=np.interp(x=radii[i],xp=pixelsize*r,fp=DMprofile1)
-        # Area where DM in 100kpc
-        #r100x, r100y=np.where(map1>DMradii[i])
-        #arearadii[i]=float(np.shape(r100x)[0])
-        #massradii1[i]=np.sum(map1[map1>DMradii[i]])
         arearadii[i], massradii1[i]=findX(map1,DMradii[i])
 
-        #print(arearadii[i])
         if arearadii[i] > Totalarea2:
             logger.warning('map2 too peaky')
             logger.error('Overlap calculation failed')
@@ -204,16 +213,16 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
 
         if ndim == 2:
             [a,b]=np.where(map1>DMradii[i])
-            if(plot): ax[i].scatter(a,b,marker='.',alpha=0.3,color='orange',label='map1')
+            if plot: ax[i].scatter(a,b,marker='.',alpha=0.3,color='orange',label='map1')
 
             [a,b]=np.where(map2>10**level100)
-            if(plot): ax[i].scatter(a,b,marker='.',alpha=0.3,color='blue',label='map2')
+            if plot: ax[i].scatter(a,b,marker='.',alpha=0.3,color='blue',label='map2')
 
             [ox,oy]=np.where((map1>DMradii[i]) & (map2>10**level100))
-            if(plot):
+            if plot:
                 ax[i].scatter(ox,oy,marker='.',alpha=0.3,color='green')
                 ax[i].set_xlabel("x [pixel]",fontsize=14)
-                if (i==0):
+                if i == 0:
                     ax[i].set_ylabel("y [pixel]",fontsize=14)
                 ax[i].set(xlim=(0,np.shape(map1)[0]),ylim=(0,np.shape(map1)[0]))
                 ax[i].set_aspect('equal')
@@ -229,9 +238,6 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
     coefficient1=0.0
     coefficient2=0.0
     for i in range(nlevel):
-        #coefficient1=coefficient1+(Overlap[i]/arearadii[i])*(arearadii[-1]/arearadii[i])*(Totalmass1/massradii1[i])*(Totalmass2/massradii2[i])
-        #coefficient2=coefficient2+(arearadii[-1]/arearadii[i])*(Totalmass1/massradii1[i])*(Totalmass2/massradii2[i])
-
         coefficient1 = coefficient1 + (
             Overlap[i] / arearadii[i]
         ) * (
@@ -250,12 +256,12 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
         logger.debug("%s", map2radii[i] / sum2)
         logger.debug("%s", (arearadii[-1] / arearadii[i]) / sum4)
 
-    if(plot and ndim == 2):
+    if plot and ndim == 2:
         import matplotlib.pyplot as plt
         plt.legend()
         plt.title('woc: '+str(coefficient1/coefficient2))
 
-        if(savefig==None):
+        if savefig is None:
             plt.show()
         else:
             plt.savefig(savefig)

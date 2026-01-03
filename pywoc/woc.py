@@ -69,7 +69,7 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
     map1 = np.array(map1, copy=True)
     map2 = np.array(map2, copy=True)
     if mask is None:
-        mask=(map1*0)+1
+        mask = np.ones_like(map1)
         
     if centre is None: # use maximum point
         #centre=np.squeeze(np.where(map1 == map1.max()))

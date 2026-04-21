@@ -92,6 +92,48 @@ def test_3d_shape_validation():
         assert "must have the same shape" in str(e)
  
  
+def test_woc_3d_return_overlap_volume():
+    """Test that return_overlap yields per-radius overlap volumes in 3D."""
+    vol1, vol2 = generate_3d_volumes()
+    radii = [5, 10, 15]
+    pixelsize = 2.0
+
+    coeff_only = woc(vol1, vol2, radii, pixelsize=pixelsize, rbins=20)
+    coeff, overlap = woc(vol1, vol2, radii, pixelsize=pixelsize, rbins=20,
+                         return_overlap=True)
+
+    # The coefficient must match the single-return call
+    assert np.isclose(coeff, coeff_only, rtol=1e-6)
+
+    # Overlap should be an ndarray of one value per radius, scaled by pixelsize**3
+    assert isinstance(overlap, np.ndarray)
+    assert overlap.shape == (len(radii),)
+    assert np.all(overlap >= 0)
+    # Values must be multiples of the voxel physical volume
+    voxel_volume = pixelsize ** 3
+    assert np.allclose(overlap / voxel_volume,
+                       np.round(overlap / voxel_volume))
+
+
+def test_woc_2d_return_overlap_area():
+    """Test that return_overlap yields per-radius overlap areas in 2D."""
+    vol1, vol2 = generate_3d_volumes()
+    size = vol1.shape[0]
+    map1 = vol1[size // 2, :, :]
+    map2 = vol2[size // 2, :, :]
+    radii = [5, 10, 15]
+    pixelsize = 0.5
+
+    coeff, overlap = woc(map1, map2, radii, pixelsize=pixelsize, rbins=20,
+                         return_overlap=True)
+    assert isinstance(overlap, np.ndarray)
+    assert overlap.shape == (len(radii),)
+    # Values must be multiples of the pixel physical area
+    pixel_area = pixelsize ** 2
+    assert np.allclose(overlap / pixel_area,
+                       np.round(overlap / pixel_area))
+
+
 def test_dimension_validation():
     """Test that only 2D and 3D arrays are accepted."""
     vol1 = np.random.rand(10, 10, 10, 10)  # 4D
@@ -115,7 +157,15 @@ if __name__ == '__main__':
     print("Test 2: 2D backward compatibility...", end=" ")
     test_woc_2d_backward_compatibility()
     print("PASSED")
- 
+
+    print("Test 3: 3D overlap volume return...", end=" ")
+    test_woc_3d_return_overlap_volume()
+    print("PASSED")
+
+    print("Test 4: 2D overlap area return...", end=" ")
+    test_woc_2d_return_overlap_area()
+    print("PASSED")
+
     print("Test 3: 3D shape validation...", end=" ")
     test_3d_shape_validation()
     print("PASSED")

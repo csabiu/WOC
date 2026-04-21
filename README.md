@@ -28,7 +28,8 @@ Running
 from pywoc import woc
 
 woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
-    plot=False, savefig=None, rbins=20, maxr=None):
+    plot=False, savefig=None, rbins=20, maxr=None,
+    method='median', return_overlap=False):
 
 - **map1** -- 2‑D or 3-D ``numpy.ndarray`` representing the reference map/volume.
   The array shape defines the pixel/voxel grid and all values should be finite
@@ -55,9 +56,17 @@ woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
       ``[x, y, z]`` for 3D specifies explicit coordinates.
     - ``plot`` -- if ``True`` show diagnostic plots (only supported for 2D data).
     - ``savefig`` -- filename for plots when ``plot`` is ``True``.
+    - ``return_overlap`` -- if ``True`` also return the overlap measurement at
+      each radius. For 2D input this is an **area** in units of
+      ``pixelsize**2``; for 3D input this is a **volume** in units of
+      ``pixelsize**3``. The call then returns a tuple
+      ``(coefficient, overlap)``.
 
 The call returns a single floating point value containing the weighted
-overlap coefficient between ``map1`` and ``map2``.
+overlap coefficient between ``map1`` and ``map2``. When ``return_overlap``
+is ``True`` it instead returns ``(coefficient, overlap)`` where ``overlap``
+is a NumPy array with one entry per requested radius (an area in 2D, a
+volume in 3D).
 		    
 revision history
 ----------------
@@ -81,3 +90,7 @@ added some numba support
 
 0.4.1
 added radial profile vectorization and regression tests
+
+0.5.0
+added ``return_overlap`` option so callers can retrieve the overlap area
+(2D) or overlap volume (3D) at each radius in physical units

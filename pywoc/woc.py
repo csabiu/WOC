@@ -34,7 +34,8 @@ def findX(map1, level):
 
 # with NaN dealing & signal strength considered weight
 def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
-        plot=False, savefig=None, rbins=20, maxr=None, method='median'):
+        plot=False, savefig=None, rbins=20, maxr=None, method='median',
+        return_overlap=False):
     """Compute the weighted overlap coefficient between two maps or volumes.
 
     Parameters
@@ -69,6 +70,10 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
         Maximum radius of the profile in pixel units.
     method : {'median', 'mean'}, optional
         Statistic used when computing the radial profile.
+    return_overlap : bool, optional
+        If ``True``, also return the physical overlap measurement at each
+        radius. For 2D input this is an area (``pixelsize**2``); for 3D
+        input this is a volume (``pixelsize**3``).
 
     Notes
     -----
@@ -77,8 +82,11 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
 
     Returns
     -------
-    float
-        Weighted overlap coefficient between ``map1`` and ``map2``.
+    float or (float, ndarray)
+        Weighted overlap coefficient between ``map1`` and ``map2``. When
+        ``return_overlap`` is ``True``, a tuple ``(coefficient, overlap)``
+        is returned where ``overlap`` is an array of overlap areas (2D) or
+        overlap volumes (3D) at each requested radius.
     """
     start = time.time()
 
@@ -269,4 +277,8 @@ def woc(map1, map2, radii, mask=None, centre=None, pixelsize=1,
 
     logger.info('woc: %s', coefficient1 / coefficient2)
     logger.info('time taken: %s', time.time() - start)
+
+    if return_overlap:
+        overlap_measure = Overlap * (pixelsize ** ndim)
+        return coefficient1 / coefficient2, overlap_measure
     return coefficient1 / coefficient2
